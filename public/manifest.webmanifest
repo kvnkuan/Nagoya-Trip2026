@@ -1,0 +1,20 @@
+{
+  "name": "旅遊｜名古屋 2026",
+  "short_name": "名古屋行程",
+  "description": "從 Markdown 更新的名古屋旅行行程",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f2e9",
+  "theme_color": "#194b39",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

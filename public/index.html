@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#194b39" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="名古屋行程" />
+    <meta name="description" content="從 Markdown 即時更新的名古屋旅行行程 PWA" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>旅遊｜名古屋</title>
+  </head>
+  <body>
+    <div id="app" aria-live="polite">
+      <div class="loading-shell">
+        <span class="loading-mark" aria-hidden="true"></span>
+        <p>正在讀取名古屋行程…</p>
+      </div>
+    </div>
+    <noscript>請開啟 JavaScript 以讀取行程資料。</noscript>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
