@@ -1,0 +1,109 @@
+import assert from 'node:assert/strict';
+import { access, readFile } from 'node:fs/promises';
+import test from 'node:test';
+import * as tripData from '../src/trip-data.js';
+
+test('trip data module exists', async () => {
+  await assert.doesNotReject(() => access(new URL('../src/trip-data.js', import.meta.url)));
+});
+
+test('exports a Markdown parser', () => {
+  assert.equal(typeof tripData.parseTripMarkdown, 'function');
+});
+
+const fixture = `# 旅遊｜名古屋
+## 旅程設定
+- 旅遊日期：2026-09-11 至 2026-09-17
+- 時區：Asia/Tokyo
+## 每日行程
+### 2026-09-11（週五）
+#### 10:00｜吉卜力公園
+- 時間：10:00–17:00
+- 景點 ID：ghibli-park
+- 類別：景點
+- 狀態：已預約
+- 時間是否鎖定：是
+- 路徑距離（公制）：約 24 公里
+- 預估交通時間：約 55 分鐘
+<!--
+### YYYY-MM-DD（週X）
+#### HH:MM｜樣板
+- 景點 ID：example-place
+-->
+## 景點與店舖資料庫
+### 吉卜力公園
+- ID：ghibli-park
+- 正式名稱：吉卜力公園
+- 類別：景點
+- 經緯度：35.1750366, 137.0887701（Google Maps）
+- Google Maps 網址：https://maps.example/ghibli
+- 營業時間：平日 10:00–17:00
+- 簡述：走進吉卜力五大園區
+- 指標性特色：Premium 票可進指定建築
+`;
+
+test('parses settings, dated itinerary, locked stops and place records', () => {
+  const model = tripData.parseTripMarkdown(fixture);
+
+  assert.equal(model.settings['旅遊日期'], '2026-09-11 至 2026-09-17');
+  assert.equal(model.days.length, 1);
+  assert.equal(model.days[0].date, '2026-09-11');
+  assert.equal(model.days[0].stops[0].name, '吉卜力公園');
+  assert.equal(model.days[0].stops[0].locked, true);
+  assert.equal(model.days[0].stops[0].fields['預估交通時間'], '約 55 分鐘');
+  assert.equal(model.places['ghibli-park'].coordinates.latitude, 35.1750366);
+  assert.equal(model.places['ghibli-park'].coordinates.longitude, 137.0887701);
+  assert.equal(model.places['ghibli-park'].fields['簡述'], '走進吉卜力五大園區');
+});
+
+test('ignores commented itinerary templates', () => {
+  const model = tripData.parseTripMarkdown(fixture);
+  assert.equal(model.days.some((day) => day.date === 'YYYY-MM-DD'), false);
+});
+
+test('chooses today, the first future day, or the final past day', () => {
+  assert.equal(typeof tripData.chooseFocusDay, 'function');
+  const days = [
+    { date: '2026-09-11' },
+    { date: '2026-09-12' },
+    { date: '2026-09-13' },
+  ];
+
+  assert.equal(tripData.chooseFocusDay(days, new Date('2026-09-10T12:00:00Z')).date, '2026-09-11');
+  assert.equal(tripData.chooseFocusDay(days, new Date('2026-09-12T01:00:00Z')).date, '2026-09-12');
+  assert.equal(tripData.chooseFocusDay(days, new Date('2026-09-14T12:00:00Z')).date, '2026-09-13');
+});
+
+test('assesses open, closing soon, closed, overnight and unknown hours', () => {
+  assert.equal(typeof tripData.assessOpeningStatus, 'function');
+  assert.equal(tripData.assessOpeningStatus('10:00–17:00', 12 * 60).state, 'open');
+  assert.equal(tripData.assessOpeningStatus('10:00–17:00', 16 * 60 + 20).state, 'closing-soon');
+  assert.equal(tripData.assessOpeningStatus('10:00–17:00', 17 * 60 + 1).state, 'closed');
+  assert.equal(tripData.assessOpeningStatus('17:00–00:30', 23 * 60 + 45).state, 'closing-soon');
+  assert.equal(tripData.assessOpeningStatus('待確認', 12 * 60).state, 'unknown');
+});
+
+test('parses the published trip file as seven real travel days', async () => {
+  const markdown = await readFile(new URL('../nagoya-trip.md', import.meta.url), 'utf8');
+  const model = tripData.parseTripMarkdown(markdown);
+
+  assert.equal(model.days.length, 7);
+  assert.equal(model.days[0].date, '2026-09-11');
+  assert.equal(model.days.at(-1).date, '2026-09-17');
+  assert.equal(model.days[0].stops[0].locked, true);
+  assert.ok(Object.keys(model.places).length >= 17);
+  assert.equal(model.places['ghibli-park'].coordinates.latitude, 35.1750366);
+});
+
+test('calculates and formats metric distance from live coordinates', () => {
+  assert.equal(typeof tripData.distanceInMeters, 'function');
+  assert.equal(typeof tripData.formatMetricDistance, 'function');
+  const meters = tripData.distanceInMeters(
+    { latitude: 35.1709, longitude: 136.8815 },
+    { latitude: 35.1750, longitude: 136.8815 },
+  );
+
+  assert.ok(meters > 450 && meters < 470);
+  assert.equal(tripData.formatMetricDistance(meters), '約 460 公尺');
+  assert.equal(tripData.formatMetricDistance(2150), '約 2.2 公里');
+});
