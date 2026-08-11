@@ -6,7 +6,7 @@ iPhone-first travel PWA generated from one Markdown source of truth.
 
 ## Data workflow
 
-Edit [`nagoya-trip.md`](./nagoya-trip.md), then rebuild the site. It contains trip settings, daily itinerary, place records, transport segments, unresolved items, and an update log. The application does not maintain a second hand-edited itinerary dataset.
+Edit the workspace-level [`nagoya-trip.md`](../nagoya-trip.md), then rebuild the site. It contains trip settings, daily itinerary, place records, transport segments, unresolved items, and an update log. The project intentionally does not keep a second hand-edited Markdown copy.
 
 ```bash
 npm test
@@ -27,7 +27,7 @@ Location is requested only after tapping `使用目前位置`. When a place has 
 
 ## Updating the trip
 
-1. Add or revise a place in `nagoya-trip.md`.
+1. Add or revise a place in the workspace-level `../nagoya-trip.md`.
 2. Keep confirmed or reserved times marked `時間是否鎖定：是`.
 3. Run `npm test && npm run build`.
 4. Commit the Markdown and regenerated site source together.

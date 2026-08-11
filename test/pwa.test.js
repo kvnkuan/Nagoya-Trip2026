@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { access, readFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
 import test from 'node:test';
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
+const execFileAsync = promisify(execFile);
 
 test('PWA source files exist', async () => {
   const files = [
@@ -15,6 +18,22 @@ test('PWA source files exist', async () => {
     'scripts/build.mjs',
   ];
   await assert.doesNotReject(() => Promise.all(files.map((file) => readFile(projectFile(file), 'utf8'))));
+});
+
+test('build publishes the workspace-root Markdown source of truth', async () => {
+  await execFileAsync(process.execPath, ['scripts/build.mjs'], {
+    cwd: new URL('..', import.meta.url),
+  });
+  const [source, published] = await Promise.all([
+    readFile(new URL('../../nagoya-trip.md', import.meta.url), 'utf8'),
+    readFile(projectFile('dist/nagoya-trip.md'), 'utf8'),
+  ]);
+
+  assert.equal(published, source);
+});
+
+test('project does not keep a second hand-maintained Markdown copy', async () => {
+  await assert.rejects(() => access(projectFile('nagoya-trip.md')));
 });
 
 test('manifest and HTML are configured for an iPhone standalone PWA', async () => {

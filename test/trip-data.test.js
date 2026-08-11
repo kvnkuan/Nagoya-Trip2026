@@ -116,15 +116,17 @@ test('assesses open, closing soon, closed, overnight and unknown hours', () => {
 });
 
 test('parses the published trip file as seven real travel days', async () => {
-  const markdown = await readFile(new URL('../nagoya-trip.md', import.meta.url), 'utf8');
+  const markdown = await readFile(new URL('../../nagoya-trip.md', import.meta.url), 'utf8');
   const model = tripData.parseTripMarkdown(markdown);
 
   assert.equal(model.days.length, 7);
   assert.equal(model.days[0].date, '2026-09-11');
   assert.equal(model.days.at(-1).date, '2026-09-17');
   assert.equal(model.days[0].stops[0].locked, true);
-  assert.ok(Object.keys(model.places).length >= 17);
+  assert.ok(Object.keys(model.places).length >= 40);
   assert.equal(model.places['ghibli-park'].coordinates.latitude, 35.1750366);
+  assert.equal(model.places['nagoya-castle'].fields['正式名稱'], '名古屋城（含本丸御殿）');
+  assert.equal(markdown.includes('<!--\n<!-- NAGOYA-CHANGE-START'), false);
 });
 
 test('calculates and formats metric distance from live coordinates', () => {
