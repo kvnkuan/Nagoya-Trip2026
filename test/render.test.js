@@ -62,6 +62,26 @@ test('renders the focus day open and other days collapsed with route details', (
   assert.match(html, /https:\/\/maps\.example\/onodera/);
 });
 
+test('uses real map links and removes the redundant Markdown shortcut', () => {
+  const html = renderModule.renderApp(model, { now: new Date('2026-09-10T12:00:00Z') });
+
+  assert.doesNotMatch(html, /Markdown ↗/);
+  assert.match(html, /class="map-nav" href="https:\/\/maps\.example\/onodera"/);
+  assert.doesNotMatch(html, /class="map-nav" href="#itinerary"/);
+  assert.match(html, /class="route-map-link" href="https:\/\/maps\.example\/onodera"/);
+});
+
+test('renders optically stable SVG controls and an annotation editor for each stop', () => {
+  const html = renderModule.renderApp(model, { now: new Date('2026-09-10T12:00:00Z') });
+
+  assert.match(html, /class="summary-arrow"[^>]*><svg/);
+  assert.doesNotMatch(html, /class="summary-arrow"[^>]*>⌄/);
+  assert.match(html, /data-note-toggle="2026-09-11-onodera"/);
+  assert.match(html, /data-note-editor="2026-09-11-onodera" hidden/);
+  assert.match(html, /data-note-input="2026-09-11-onodera"/);
+  assert.match(html, /class="nav-icon add-icon"[^>]*><svg/);
+});
+
 test('escapes Markdown text before inserting it into HTML', () => {
   const unsafe = structuredClone(model);
   unsafe.days[0].stops[0].name = '<script>alert(1)</script>';
