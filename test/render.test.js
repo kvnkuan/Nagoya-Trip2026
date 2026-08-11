@@ -101,3 +101,28 @@ test('renders live metric distance when location and place coordinates exist', (
 
   assert.match(html, /距你約 460 公尺/);
 });
+
+test('shows the latest change badges without exposing Markdown comment syntax', () => {
+  const changed = structuredClone(model);
+  changed.changes = {
+    id: '20260811T171134JST',
+    entries: [{ id: '20260811T171134JST', kind: 'updated', target: 'onodera', part: '1' }],
+  };
+  changed.days[0].stops[0].change = changed.changes.entries[0];
+  changed.places.onodera.change = changed.changes.entries[0];
+  const html = renderModule.renderApp(changed, { now: new Date('2026-09-10T12:00:00Z') });
+
+  assert.match(html, /本次更新 1 處/);
+  assert.match(html, /class="change-badge change-updated">已更新</);
+  assert.match(html, /class="stop change-updated"/);
+  assert.doesNotMatch(html, /NAGOYA-CHANGE|<!--|20260811T171134JST/);
+});
+
+test('keeps Tabelog chips compact when Markdown includes verification details', () => {
+  const detailed = structuredClone(model);
+  detailed.places.onodera.fields['Tabelog 星等'] = '3.45（70 則評論；分數會浮動，2026-08-11 查證）';
+  const html = renderModule.renderApp(detailed, { now: new Date('2026-09-10T12:00:00Z') });
+
+  assert.match(html, /Tabelog 3\.45/);
+  assert.doesNotMatch(html, /class="chip rating">Tabelog 3\.45（70 則評論/);
+});

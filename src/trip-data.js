@@ -9,7 +9,40 @@ function parseCoordinates(value = '') {
   return { latitude: Number(match[1]), longitude: Number(match[2]) };
 }
 
+function parseMarkerAttributes(value = '') {
+  const attributes = {};
+  for (const match of value.matchAll(/([A-Za-z][\w-]*)="([^"]*)"/g)) {
+    attributes[match[1]] = match[2];
+  }
+  return attributes;
+}
+
+function parseChangeMarkers(markdown = '') {
+  const found = [];
+  const markerPattern = /<!--\s*NAGOYA-CHANGE-(START|END|REMOVED)\b([\s\S]*?)-->/g;
+
+  for (const match of markdown.matchAll(markerPattern)) {
+    const type = match[1];
+    if (type === 'END') continue;
+    const attributes = parseMarkerAttributes(match[2]);
+    if (!attributes.id || !attributes.target) continue;
+    const kind = type === 'REMOVED' ? 'removed' : attributes.kind;
+    if (!['added', 'updated', 'removed'].includes(kind)) continue;
+    found.push({
+      id: attributes.id,
+      kind,
+      target: attributes.target,
+      part: attributes.part ?? '',
+      ...(attributes.note ? { note: attributes.note } : {}),
+    });
+  }
+
+  const id = found.at(-1)?.id ?? '';
+  return { id, entries: id ? found.filter((entry) => entry.id === id) : [] };
+}
+
 export function parseTripMarkdown(markdown = '') {
+  const changes = parseChangeMarkers(markdown);
   const source = markdown.replace(/<!--[\s\S]*?-->/g, '');
   const settings = {};
   const days = [];
@@ -92,7 +125,19 @@ export function parseTripMarkdown(markdown = '') {
     if (id && id !== 'example-place') places[id] = place;
   }
 
-  return { settings, days, places };
+  const changesByTarget = new Map(changes.entries.map((entry) => [entry.target, entry]));
+  for (const day of days) {
+    for (const stop of day.stops) {
+      const change = changesByTarget.get(stop.id);
+      if (change) stop.change = change;
+    }
+  }
+  for (const [id, place] of Object.entries(places)) {
+    const change = changesByTarget.get(id);
+    if (change) place.change = change;
+  }
+
+  return { settings, days, places, changes };
 }
 
 function dateInTimeZone(now, timeZone) {
