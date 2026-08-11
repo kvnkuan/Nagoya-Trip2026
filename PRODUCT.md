@@ -29,7 +29,7 @@ Calm, observant, practical. The voice is concise Traditional Chinese with Japane
 1. Today first: the current Nagoya day and next action receive priority over the full archive.
 2. One source of truth: every itinerary fact comes from `nagoya-trip.md` or a clearly generated derivative.
 3. State is explicit: confirmed, reserved, candidate, stale, closed, and location unavailable are never communicated by color alone.
-4. Thumb-friendly editing: primary actions remain reachable and familiar on an iPhone 15.
+4. Contextual actions: location and map controls appear beside the decision they support, without persistent navigation covering the itinerary.
 5. Honest uncertainty: unknown or unverified details stay visible as pending rather than being invented.
 
 ## Accessibility & Inclusion
