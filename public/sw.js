@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nagoya-trip-v5';
+const CACHE_VERSION = 'nagoya-trip-v6';
 const APP_SHELL = [
   './',
   './index.html',
