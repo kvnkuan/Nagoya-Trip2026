@@ -61,6 +61,38 @@ test('ignores commented itinerary templates', () => {
   assert.equal(model.days.some((day) => day.date === 'YYYY-MM-DD'), false);
 });
 
+test('parses only the latest raw Markdown change markers and links them to stable targets', () => {
+  const marked = `${fixture}
+<!-- NAGOYA-CHANGE-START id="20260810T100000JST" kind="updated" target="ghibli-park" part="1" -->
+舊的更新
+<!-- NAGOYA-CHANGE-END id="20260810T100000JST" part="1" -->
+<!-- NAGOYA-CHANGE-START id="20260811T171134JST" kind="updated" target="ghibli-park" part="1" -->
+本次更新
+<!-- NAGOYA-CHANGE-END id="20260811T171134JST" part="1" -->
+<!-- NAGOYA-CHANGE-START id="20260811T171134JST" kind="added" target="trip-settings.hotel" part="2" -->
+本次新增
+<!-- NAGOYA-CHANGE-END id="20260811T171134JST" part="2" -->
+<!-- NAGOYA-CHANGE-REMOVED id="20260811T171134JST" target="place.example-id" note="本次已移除" -->`;
+  const parsed = tripData.parseTripMarkdown(marked);
+
+  assert.equal(parsed.changes.id, '20260811T171134JST');
+  assert.equal(parsed.changes.entries.length, 3);
+  assert.deepEqual(parsed.changes.entries.map(({ kind, target, part }) => ({ kind, target, part })), [
+    { kind: 'updated', target: 'ghibli-park', part: '1' },
+    { kind: 'added', target: 'trip-settings.hotel', part: '2' },
+    { kind: 'removed', target: 'place.example-id', part: '' },
+  ]);
+  assert.equal(parsed.days[0].stops[0].change.kind, 'updated');
+  assert.equal(parsed.places['ghibli-park'].change.kind, 'updated');
+  assert.equal(parsed.changes.entries[2].note, '本次已移除');
+});
+
+test('keeps unmarked Markdown parsing normally and returns an empty change set', () => {
+  const parsed = tripData.parseTripMarkdown(fixture);
+  assert.deepEqual(parsed.changes, { id: '', entries: [] });
+  assert.equal(parsed.days[0].stops[0].name, '吉卜力公園');
+});
+
 test('chooses today, the first future day, or the final past day', () => {
   assert.equal(typeof tripData.chooseFocusDay, 'function');
   const days = [

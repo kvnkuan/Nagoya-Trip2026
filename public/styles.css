@@ -330,7 +330,8 @@ main { padding: 19px 14px calc(98px + env(safe-area-inset-bottom)); }
 
 .category,
 .opening,
-.locked {
+.locked,
+.change-badge {
   display: inline-flex;
   align-items: center;
   min-height: 20px;
@@ -349,6 +350,10 @@ main { padding: 19px 14px calc(98px + env(safe-area-inset-bottom)); }
 .opening-closed { color: var(--danger); }
 .opening-scheduled { color: var(--muted); }
 .locked { background: var(--paper-deep); color: var(--muted); }
+.change-badge { background: color-mix(in oklch, var(--lime) 38%, var(--surface)); color: var(--green); }
+.change-badge.change-added { background: color-mix(in oklch, var(--coral) 20%, var(--surface)); color: oklch(0.48 0.14 35); }
+.stop.change-updated .timeline-mark,
+.stop.change-added .timeline-mark { box-shadow: 0 0 0 4px color-mix(in oklch, var(--lime) 28%, transparent); }
 
 .stop-content h3 {
   margin: 6px 0 4px;

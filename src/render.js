@@ -87,13 +87,16 @@ function renderStop(stop, place, isToday, clock, location, dayDate) {
     : { state: 'scheduled', label: hours || '營業時間待確認' };
   const description = placeFields['簡述'] || fields['備註'] || stop.status;
   const tabelog = placeFields['Tabelog 星等'];
+  const tabelogScore = tabelog?.match(/\d+(?:\.\d+)?/)?.[0] ?? '';
   const google = placeFields['Google 評價'];
   const liveDistance = location && place?.coordinates
     ? `距你${formatMetricDistance(distanceInMeters(location, place.coordinates))}`
     : '';
   const noteId = escapeHtml(`${dayDate}-${stop.id || stop.time}`);
+  const changeKind = ['added', 'updated'].includes(stop.change?.kind) ? stop.change.kind : '';
+  const changeLabel = changeKind === 'added' ? '本次新增' : changeKind === 'updated' ? '已更新' : '';
 
-  return `<li class="stop">
+  return `<li class="stop${changeKind ? ` change-${changeKind}` : ''}">
     <time class="stop-time" datetime="${escapeHtml(stop.time)}">${escapeHtml(stop.time)}</time>
     <span class="timeline-mark" aria-hidden="true"></span>
     <article class="stop-content">
@@ -101,6 +104,7 @@ function renderStop(stop, place, isToday, clock, location, dayDate) {
         <span class="category category-${escapeHtml(stop.category)}">${escapeHtml(stop.category)}</span>
         <span class="opening opening-${opening.state}">${escapeHtml(opening.label)}</span>
         ${stop.locked ? '<span class="locked">已鎖定</span>' : ''}
+        ${changeLabel ? `<span class="change-badge change-${changeKind}">${changeLabel}</span>` : ''}
       </div>
       <h3>${escapeHtml(stop.name)}</h3>
       <p>${escapeHtml(description)}</p>
@@ -109,7 +113,7 @@ function renderStop(stop, place, isToday, clock, location, dayDate) {
         ${renderChip(fields['路徑距離（公制）'])}
         ${renderChip(fields['預估交通時間'])}
         ${google && google !== '待確認' ? renderChip(`Google ${google}`, 'rating') : ''}
-        ${tabelog && tabelog !== '待確認' && tabelog !== '不適用' ? renderChip(`Tabelog ${tabelog}`, 'rating') : ''}
+        ${tabelogScore ? renderChip(`Tabelog ${tabelogScore}`, 'rating') : ''}
       </div>
       <div class="stop-actions">
         ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noreferrer">Google Maps <span class="inline-icon" aria-hidden="true">${icon('externalLink')}</span></a>` : '<span class="map-pending">地圖連結待確認</span>'}
@@ -156,12 +160,14 @@ export function renderApp(model, options = {}) {
     : model.days;
   const range = model.settings['旅遊日期'] || '日期待確認';
   const focusMapUrl = routeMapUrl(focusDay || model.days[0] || { stops: [] }, model.places);
+  const changeCount = model.changes?.entries?.length ?? 0;
+  const syncLabel = changeCount ? `本次更新 ${changeCount} 處` : '行程資料已同步';
 
   return `<header class="hero">
     <p class="local-time"><span aria-hidden="true"></span>NAGOYA · 當地時間 ${escapeHtml(clock.time)}</p>
     <h1>旅遊｜名古屋</h1>
     <p class="trip-range">${escapeHtml(range)}</p>
-    <div class="hero-status"><span>行程資料已同步</span><button id="locate-button" type="button"><span class="button-icon" aria-hidden="true">${icon('crosshair')}</span>使用目前位置</button></div>
+    <div class="hero-status"><span>${syncLabel}</span><button id="locate-button" type="button"><span class="button-icon" aria-hidden="true">${icon('crosshair')}</span>使用目前位置</button></div>
   </header>
   <main id="itinerary">
     <div class="section-heading"><div><p>ITINERARY</p><h2>每日行程</h2></div></div>
