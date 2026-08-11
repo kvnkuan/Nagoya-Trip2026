@@ -102,6 +102,15 @@ test('renders live metric distance when location and place coordinates exist', (
   });
 
   assert.match(html, /距你約 460 公尺/);
+  assert.match(html, /class="chip live-distance motion-distance"/);
+});
+
+test('keeps the location control structure stable while its state changes', () => {
+  const html = renderModule.renderApp(model, { now: new Date('2026-09-10T12:00:00Z') });
+
+  assert.match(html, /id="locate-button"[^>]*>/);
+  assert.match(html, /class="button-icon"/);
+  assert.match(html, /class="button-label">使用目前位置<\/span>/);
 });
 
 test('shows the latest change badges without exposing Markdown comment syntax', () => {

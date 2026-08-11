@@ -8,21 +8,37 @@ let currentLocation = null;
 function render() {
   app.innerHTML = renderApp(model, { now: new Date(), location: currentLocation });
   bindLocationButton();
+  bindInteractionMotion();
+}
+
+function bindInteractionMotion() {
+  document.querySelectorAll('.day').forEach((day) => {
+    day.addEventListener('toggle', (event) => {
+      if (!day.open || !event.isTrusted) return;
+      day.classList.remove('is-opening');
+      requestAnimationFrame(() => day.classList.add('is-opening'));
+      window.setTimeout(() => day.classList.remove('is-opening'), 320);
+    });
+  });
 }
 
 function bindLocationButton() {
   const button = document.querySelector('#locate-button');
   if (!button) return;
+  const label = button.querySelector('.button-label');
+  const setLabel = (text) => {
+    if (label) label.textContent = text;
+  };
 
   if (!('geolocation' in navigator)) {
-    button.textContent = '此裝置不支援定位';
+    setLabel('此裝置不支援定位');
     button.disabled = true;
     return;
   }
 
   button.addEventListener('click', () => {
     button.setAttribute('aria-busy', 'true');
-    button.textContent = '正在取得位置…';
+    setLabel('正在取得位置…');
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         currentLocation = { latitude: coords.latitude, longitude: coords.longitude };
@@ -30,7 +46,7 @@ function bindLocationButton() {
       },
       (error) => {
         button.removeAttribute('aria-busy');
-        button.textContent = error.code === error.PERMISSION_DENIED ? '定位權限未開啟' : '暫時無法定位';
+        setLabel(error.code === error.PERMISSION_DENIED ? '定位權限未開啟' : '暫時無法定位');
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     );

@@ -104,7 +104,7 @@ function renderStop(stop, place, isToday, clock, location) {
       <h3>${escapeHtml(stop.name)}</h3>
       <p>${escapeHtml(description)}</p>
       <div class="chips">
-        ${renderChip(liveDistance, 'live-distance')}
+        ${renderChip(liveDistance, 'live-distance motion-distance')}
         ${renderChip(fields['路徑距離（公制）'])}
         ${renderChip(fields['預估交通時間'])}
         ${google && google !== '待確認' ? renderChip(`Google ${google}`, 'rating') : ''}
@@ -153,7 +153,7 @@ export function renderApp(model, options = {}) {
     <p class="local-time"><span aria-hidden="true"></span>NAGOYA · 當地時間 ${escapeHtml(clock.time)}</p>
     <h1>旅遊｜名古屋</h1>
     <p class="trip-range">${escapeHtml(range)}</p>
-    <div class="hero-status"><span>${syncLabel}</span><button id="locate-button" type="button"><span class="button-icon" aria-hidden="true">${icon('crosshair')}</span>使用目前位置</button></div>
+    <div class="hero-status"><span>${syncLabel}</span><button id="locate-button" type="button"><span class="button-icon" aria-hidden="true">${icon('crosshair')}</span><span class="button-label">使用目前位置</span></button></div>
   </header>
   <main id="itinerary">
     <div class="section-heading"><h2>每日行程</h2></div>

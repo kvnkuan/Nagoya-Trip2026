@@ -52,3 +52,27 @@ test('app shell does not impose a 320px body minimum', async () => {
   assert.doesNotMatch(css, /width:\s*min\(100%,\s*430px\)/);
   assert.match(css, /max-width:\s*430px/);
 });
+
+test('runtime binds motion only to user interactions and preserves the location icon', async () => {
+  const app = await readFile(projectFile('src/app.js'), 'utf8');
+
+  assert.match(app, /function bindInteractionMotion/);
+  assert.match(app, /addEventListener\('toggle'/);
+  assert.match(app, /is-opening/);
+  assert.match(app, /\.button-label/);
+  assert.doesNotMatch(app, /button\.textContent\s*=/);
+});
+
+test('styles define a coherent accessible interaction motion system', async () => {
+  const css = await readFile(projectFile('public/styles.css'), 'utf8');
+
+  assert.match(css, /--motion-fast:\s*120ms/);
+  assert.match(css, /--motion-standard:\s*220ms/);
+  assert.match(css, /--ease-out-expo:/);
+  assert.match(css, /@keyframes itinerary-reveal/);
+  assert.match(css, /\.day\.is-opening/);
+  assert.match(css, /:active[^}]*scale\(\.96\)/s);
+  assert.match(css, /button\[aria-busy="true"\][^{]*\{[^}]*animation:/s);
+  assert.match(css, /@keyframes update-emphasis/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});

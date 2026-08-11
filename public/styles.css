@@ -18,6 +18,10 @@
   --text-body: 0.875rem;
   --text-subheading: 1rem;
   --text-heading: 1.375rem;
+  --motion-fast: 120ms;
+  --motion-standard: 220ms;
+  --motion-emphasis: 520ms;
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", sans-serif;
   font-synthesis: none;
 }
@@ -137,11 +141,17 @@ summary:focus-visible {
   background: var(--lime);
   color: color-mix(in oklch, var(--green) 92%, var(--ink));
   cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-out-expo), opacity var(--motion-fast) ease-out, box-shadow var(--motion-standard) ease-out;
 }
 
-.button-icon { font-size: 1rem; }
+.button-icon { font-size: 1rem; transform-origin: center; }
 
-.hero-status button[aria-busy="true"] { opacity: 0.74; }
+.hero-status button[aria-busy="true"] {
+  opacity: 0.82;
+  animation: locate-pulse 1.1s ease-in-out infinite;
+}
+
+.hero-status button[aria-busy="true"] .button-icon { animation: spin 900ms linear infinite; }
 
 main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
 
@@ -165,6 +175,7 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
   border-radius: 19px;
   background: var(--surface);
   box-shadow: 0 3px 13px color-mix(in oklch, var(--green) 5%, transparent);
+  transition: border-color var(--motion-standard) ease-out, box-shadow var(--motion-standard) ease-out;
 }
 
 .day[open] {
@@ -230,7 +241,7 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
   border-radius: 50%;
   background: var(--paper-deep);
   color: var(--muted);
-  transition: transform 180ms cubic-bezier(.16, 1, .3, 1), background 180ms ease-out;
+  transition: transform var(--motion-standard) var(--ease-out-expo), background var(--motion-standard) ease-out, color var(--motion-standard) ease-out;
 }
 
 .summary-arrow svg { width: 18px; height: 18px; }
@@ -259,7 +270,18 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
   font-size: var(--text-small);
   font-weight: 780;
   text-decoration: none;
+  transform-origin: center;
+  transition: transform var(--motion-fast) var(--ease-out-expo), background var(--motion-fast) ease-out;
 }
+
+.day.is-opening .day-tools,
+.day.is-opening .timeline,
+.day.is-opening .empty-day {
+  animation: itinerary-reveal var(--motion-standard) var(--ease-out-expo) both;
+}
+
+.day.is-opening .timeline,
+.day.is-opening .empty-day { animation-delay: 35ms; }
 
 .timeline { margin: 0; padding: 0 13px 4px; list-style: none; }
 
@@ -325,7 +347,11 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
 .opening-closed { color: var(--danger); }
 .opening-scheduled { color: var(--muted); }
 .locked { background: var(--paper-deep); color: var(--muted); }
-.change-badge { background: color-mix(in oklch, var(--lime) 38%, var(--surface)); color: var(--green); }
+.change-badge {
+  background: color-mix(in oklch, var(--lime) 38%, var(--surface));
+  color: var(--green);
+  animation: update-emphasis var(--motion-emphasis) var(--ease-out-expo) 1;
+}
 .change-badge.change-added { background: color-mix(in oklch, var(--coral) 20%, var(--surface)); color: oklch(0.48 0.14 35); }
 .stop.change-updated .timeline-mark,
 .stop.change-added .timeline-mark { box-shadow: 0 0 0 4px color-mix(in oklch, var(--lime) 28%, transparent); }
@@ -357,6 +383,7 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
 
 .chip.rating { background: color-mix(in oklch, var(--amber) 36%, var(--surface)); color: oklch(0.42 0.07 75); }
 .chip.live-distance { background: color-mix(in oklch, var(--lime) 35%, var(--surface)); color: var(--green); }
+.motion-distance { animation: distance-arrival 280ms var(--ease-out-expo) both; }
 
 .stop-map-link,
 .map-pending {
@@ -370,6 +397,15 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
   font-weight: 750;
   text-decoration: none;
 }
+
+.stop-map-link {
+  transform-origin: left center;
+  transition: transform var(--motion-fast) var(--ease-out-expo), color var(--motion-fast) ease-out;
+}
+
+.hero-status button:active,
+.day-tools a:active,
+.stop-map-link:active { transform: scale(.96); }
 
 .map-pending { color: var(--muted); }
 
@@ -409,6 +445,27 @@ main { padding: 16px 14px calc(28px + env(safe-area-inset-bottom)); }
 
 .loading-shell p, .error-shell p { color: var(--muted); font-size: var(--text-body); }
 .error-shell h1 { margin: 0; font-size: 1.25rem; }
+
+@keyframes itinerary-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes distance-arrival {
+  from { opacity: 0; transform: translateY(6px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes locate-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--lime) 24%, transparent); }
+  50% { box-shadow: 0 0 0 7px color-mix(in oklch, var(--lime) 5%, transparent); }
+}
+
+@keyframes update-emphasis {
+  0% { transform: scale(.94); box-shadow: 0 0 0 0 color-mix(in oklch, var(--lime) 42%, transparent); }
+  55% { transform: scale(1.04); box-shadow: 0 0 0 6px color-mix(in oklch, var(--lime) 10%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
