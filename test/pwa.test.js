@@ -40,3 +40,15 @@ test('hero has no decorative pseudo-element character', async () => {
   const css = await readFile(projectFile('public/styles.css'), 'utf8');
   assert.doesNotMatch(css, /\.hero::after/);
 });
+
+test('app runtime has no local annotation storage or editor binding', async () => {
+  const app = await readFile(projectFile('src/app.js'), 'utf8');
+  assert.doesNotMatch(app, /localStorage|noteStorageKey|bindNoteEditors|data-note-/);
+});
+
+test('app shell does not impose a 320px body minimum', async () => {
+  const css = await readFile(projectFile('public/styles.css'), 'utf8');
+  assert.doesNotMatch(css, /min-width:\s*320px/);
+  assert.doesNotMatch(css, /width:\s*min\(100%,\s*430px\)/);
+  assert.match(css, /max-width:\s*430px/);
+});

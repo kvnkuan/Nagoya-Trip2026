@@ -62,24 +62,26 @@ test('renders the focus day open and other days collapsed with route details', (
   assert.match(html, /https:\/\/maps\.example\/onodera/);
 });
 
-test('uses real map links and removes the redundant Markdown shortcut', () => {
+test('keeps map actions contextual without a redundant global navigation bar', () => {
   const html = renderModule.renderApp(model, { now: new Date('2026-09-10T12:00:00Z') });
 
   assert.doesNotMatch(html, /Markdown ↗/);
-  assert.match(html, /class="map-nav" href="https:\/\/maps\.example\/onodera"/);
-  assert.doesNotMatch(html, /class="map-nav" href="#itinerary"/);
   assert.match(html, /class="route-map-link" href="https:\/\/maps\.example\/onodera"/);
+  assert.match(html, /整日路線/);
+  assert.match(html, /href="https:\/\/maps\.example\/onodera"[^>]*>Google Maps/);
+  assert.doesNotMatch(html, /class="bottom-nav"|class="map-nav"/);
 });
 
-test('renders optically stable SVG controls and an annotation editor for each stop', () => {
+test('renders only travel controls without annotation, add, or raw-data interfaces', () => {
   const html = renderModule.renderApp(model, { now: new Date('2026-09-10T12:00:00Z') });
 
   assert.match(html, /class="summary-arrow"[^>]*><svg/);
   assert.doesNotMatch(html, /class="summary-arrow"[^>]*>⌄/);
-  assert.match(html, /data-note-toggle="2026-09-11-onodera"/);
-  assert.match(html, /data-note-editor="2026-09-11-onodera" hidden/);
-  assert.match(html, /data-note-input="2026-09-11-onodera"/);
-  assert.match(html, /class="nav-icon add-icon"[^>]*><svg/);
+  assert.doesNotMatch(html, /註記|data-note-|修改註記/);
+  assert.doesNotMatch(html, /github\.com\/kvnkuan\/Nagoya-Trip2026\/edit/);
+  assert.doesNotMatch(html, /href="\.\/nagoya-trip\.md"/);
+  assert.doesNotMatch(html, />加入<|>資料<|主要導覽/);
+  assert.doesNotMatch(html, /ITINERARY|已依 Markdown 更新|依照確認時間與順序顯示/);
 });
 
 test('escapes Markdown text before inserting it into HTML', () => {
