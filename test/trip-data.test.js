@@ -115,17 +115,26 @@ test('assesses open, closing soon, closed, overnight and unknown hours', () => {
   assert.equal(tripData.assessOpeningStatus('待確認', 12 * 60).state, 'unknown');
 });
 
-test('parses the published trip file as seven real travel days', async () => {
+test('parses the published trip file as five real travel days', async () => {
   const markdown = await readFile(new URL('../../nagoya-trip.md', import.meta.url), 'utf8');
   const model = tripData.parseTripMarkdown(markdown);
 
-  assert.equal(model.days.length, 7);
-  assert.equal(model.days[0].date, '2026-09-11');
-  assert.equal(model.days.at(-1).date, '2026-09-17');
+  assert.equal(model.days.length, 5);
+  assert.equal(model.days[0].date, '2026-09-12');
+  assert.equal(model.days.at(-1).date, '2026-09-16');
   assert.equal(model.days[0].stops[0].locked, true);
   assert.ok(Object.keys(model.places).length >= 40);
   assert.equal(model.places['ghibli-park'].coordinates.latitude, 35.1750366);
-  assert.equal(model.places['nagoya-castle'].fields['正式名稱'], '名古屋城（含本丸御殿）');
+  assert.equal(model.places['hida-takayama-old-town'].fields['正式名稱'], '飛驒高山老街');
+  assert.equal(model.places['shirakawago-ogimachi'].fields['正式名稱'], '白川鄉荻町合掌造聚落');
+  const scheduledStopIds = model.days.flatMap((day) => day.stops.map((stop) => stop.id));
+  assert.ok(scheduledStopIds.includes('hida-takayama-old-town'));
+  assert.ok(scheduledStopIds.includes('shirakawago-ogimachi'));
+  assert.equal(scheduledStopIds.includes('atsuta-jingu'), false);
+  assert.equal(scheduledStopIds.includes('osu-kannon'), false);
+  assert.equal(scheduledStopIds.includes('nagoya-castle'), false);
+  assert.equal(scheduledStopIds.includes('unagi-kiya'), false);
+  assert.equal(scheduledStopIds.includes('tokugawa-garden'), false);
   assert.equal(markdown.includes('<!--\n<!-- NAGOYA-CHANGE-START'), false);
 });
 
